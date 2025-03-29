@@ -71,3 +71,66 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](LICENSE).
+
+# NestJS OpenTelemetry Example
+
+This project demonstrates the integration of OpenTelemetry with NestJS, including distributed tracing and monitoring.
+
+## Features
+
+- NestJS application with OpenTelemetry integration
+- Distributed tracing with Jaeger
+- Metrics monitoring with Prometheus
+- Visualization with Grafana
+
+## Prerequisites
+
+- Node.js (v18+)
+- Docker and Docker Compose
+
+## Getting Started
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Start the monitoring stack:
+   ```bash
+   docker-compose up -d
+   ```
+
+3. Start the NestJS application:
+   ```bash
+   npm run start:dev
+   ```
+
+## Available Endpoints
+
+- `GET /` - Basic hello world endpoint
+- `GET /slow` - Endpoint with artificial delay (2s)
+- `GET /error` - Endpoint that throws an error
+
+## Monitoring URLs
+
+- Jaeger UI: http://localhost:16686
+- Prometheus: http://localhost:9090
+- Grafana: http://localhost:3001 (admin/admin)
+
+## Testing the Tracing
+
+1. Make some requests to the available endpoints
+2. Open Jaeger UI (http://localhost:16686)
+3. Select "nestjs-otlp-example" from the Service dropdown
+4. Click "Find Traces" to see the traces
+
+## Metrics
+
+The application exposes metrics at `/metrics` endpoint, which can be scraped by Prometheus.
+
+## Shutdown
+
+To stop the monitoring stack:
+```bash
+docker-compose down
+```

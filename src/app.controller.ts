@@ -9,4 +9,15 @@ export class AppController {
   getHello(): string {
     return this.appService.getHello();
   }
+
+  @Get('slow')
+  async getSlowResponse(): Promise<string> {
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    return 'This was a slow response';
+  }
+
+  @Get('error')
+  getError(): string {
+    throw new Error('This is a test error');
+  }
 }
