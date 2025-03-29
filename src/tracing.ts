@@ -3,6 +3,7 @@ import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentation
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
+import { BatchSpanProcessor, SimpleSpanProcessor } from '@opentelemetry/sdk-trace-base';
 
 const resource = resourceFromAttributes({
   [ATTR_SERVICE_NAME]: 'nestjs-otlp-example',
@@ -10,12 +11,24 @@ const resource = resourceFromAttributes({
 
 const traceExporter = new OTLPTraceExporter({
   url: 'http://localhost:4318/v1/traces',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  timeoutMillis: 15000,
 });
 
 export const otelSDK = new NodeSDK({
   resource,
   traceExporter,
-  instrumentations: [getNodeAutoInstrumentations()],
+  spanProcessor: new SimpleSpanProcessor(traceExporter),
+  instrumentations: [getNodeAutoInstrumentations({
+    '@opentelemetry/instrumentation-http': {
+      enabled: true,
+    },
+    '@opentelemetry/instrumentation-express': {
+      enabled: true,
+    },
+  })],
 });
 
 // gracefully shut down the SDK on process exit

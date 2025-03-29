@@ -5,10 +5,27 @@ services:
     image: jaegertracing/all-in-one:latest
     ports:
       - "16686:16686"  # Web UI
-      - "4317:4317"    # OTLP gRPC
-      - "4318:4318"    # OTLP HTTP
+      - "4319:4317"    # OTLP gRPC
+      - "4320:4318"    # OTLP HTTP
     environment:
       - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - tempo-network
+
+  # Tempo
+  tempo:
+    image: grafana/tempo:latest
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    user: root  # 臨時使用 root 用戶來解決權限問題
+    volumes:
+      - ./tempo.yaml:/etc/tempo.yaml
+      - tempo-data:/tmp/tempo
+    ports:
+      - "3200:3200"   # tempo
+      - "4317:4317"   # otlp grpc
+      - "4318:4318"   # otlp http
+    networks:
+      - tempo-network
 
   # Prometheus
   prometheus:
@@ -17,6 +34,8 @@ services:
       - "9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - tempo-network
 
   # Grafana
   grafana:
@@ -25,10 +44,23 @@ services:
       - "3001:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_LOG_LEVEL=debug
     volumes:
+      - ./grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
       - grafana-storage:/var/lib/grafana
     depends_on:
       - prometheus
+      - tempo
+    networks:
+      - tempo-network
+
+networks:
+  tempo-network:
+    driver: bridge
 
 volumes:
-  grafana-storage: 
+  grafana-storage:
+  tempo-data:
+    driver: local 
